@@ -398,6 +398,43 @@ summary(Slope.Mod)
 
 ## {.smaller}
 
+Another approach to simple effects analysis to view within +/- 1 s.d.
+http://statistics.ats.ucla.edu/stat/r/faq/concon.htm
+
+```{r}
+m1 <- lm(Aggression ~ c.Vid_Games + c.CaUnTs + c.Vid_Games * c.CaUnTs,
+         data = MyData)
+at.avg <- seq(-9.6, 9.6, by = 1)
+slopes <- m1$coef[2] + m1$coef[4] * at.avg
+slopes
+mean(slopes)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, error = FALSE}
+library(msm)
+estmean <- coef(m1)
+var <- vcov(m1)
+SEs <- rep(NA, length(at.avg))
+
+for (i in 1:length(at.avg)) {
+  j <- at.avg[i]
+  SEs[i] <- deltamethod (~ (x2) + (x4 * j), estmean, var)
+}
+
+upper <- slopes + 1.96 * SEs
+lower <- slopes - 1.96 * SEs
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, error = FALSE}
+Results.CIs <- data.frame(cbind(at.avg, slopes, lower, upper))
+Results.CIs$Contains.Zero <- Results.CIs$lower * Results.CIs$upper < 0
+Results.CIs
+```
+
+## {.smaller}
+
 ```{r, echo = FALSE, message = FALSE, error = FALSE}
 library(rockchalk)
 jn.Example <- lm(Aggression ~ Vid_Games + CaUnTs + Vid_Games * CaUnTs)
@@ -410,7 +447,6 @@ Book Example : Page 405
 
 ## {.smaller}
 
-
 ```{r}
 
 # this is to approximately match the book, page 405, output 10.3
@@ -420,7 +456,7 @@ jn.lo <- jn.Bounds["lo"]
 jn.hi <- jn.Bounds["hi"]
 
 # the book presents cut-off scores based on centered means, so here we
-# can convert the cutpoints# to match the book.
+# can convert the cutpoints to approximately match the book.
 jn.lo - mean(CaUnTs)
 jn.hi - mean (CaUnTs)
 ```
