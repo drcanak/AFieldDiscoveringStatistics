@@ -133,6 +133,8 @@ Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Commitment",
               treat = "LnConsumption", robustSE = TRUE, sims = 1000)
 ```
 
+The mediate function comes from the 'mediation' package and allows for a significance test of our mediational model.  In this case, we will save those reults to an object called 'Med.Out' and later call a "summary" on the 'Med.Out' object.
+
 ## {.smaller}
 
 ```{r}
@@ -239,7 +241,6 @@ summary(Path.b.Fit)
 RSq.Med <- summary(Path.b.Fit)$r.squared
 ```
 
-
 ## {.smaller}
 
 ```{r}
@@ -308,54 +309,60 @@ library(ggplot2)
 ## {.smaller}
 
 ```{r, warning = FALSE, message = FALSE}
-attach(MyData)
-sd(CaUnTs)
-mean(CaUnTs)
 
+# Centering our variables
+attach(MyData)
 MyData$c.Aggression <- scale(Aggression, center = TRUE, scale = FALSE)
 MyData$c.Vid_Games  <- scale(Vid_Games, center = TRUE, scale = FALSE)
 MyData$c.CaUnTs     <- scale(CaUnTs, center = TRUE, scale = FALSE)
 
-# this is just to show that centering variables around the mean doesn't
-# change the variance.
+```
 
+## {.smaller}
+
+This is just to show that centering variables around the mean doesn't change the variance.
+
+```{r, warning = FALSE, message = FALSE}
 attach(MyData)
+sd(CaUnTs)
+mean(CaUnTs)
+
 sd(c.CaUnTs)
 mean(c.CaUnTs)
+```
 
-# In order to create a plot looking at different slopes, this creates a new
-# variable with three different categories.
+## {.smaller}
 
+In order to create a plot looking at different slopes, this creates a new variable with three different categories.
+
+```{r}
 MyData$Cal.Traits[c.CaUnTs <= (mean(c.CaUnTs) - sd(c.CaUnTs))] <- "Low"
 MyData$Cal.Traits[c.CaUnTs >= (mean(c.CaUnTs) + sd(c.CaUnTs))] <- "High"
 MyData$Cal.Traits[c.CaUnTs > (mean(c.CaUnTs) - sd(c.CaUnTs)) &
                   c.CaUnTs <  (mean(c.CaUnTs) + sd(c.CaUnTs))] <- "Avg"
 
-# then in order to ensure that my first level is my "Low"" group, I
-# explicitly # set the level order to override R's default behavior of
+# then in order to ensure that my first level is my "Low"" group, I  
+# explicitly set the level order to override R's default behavior of
 # making them alphabetical
 
 MyData$Cal.Traits <- factor(MyData$Cal.Traits, levels = c("Low", "Avg", "High"))
-
-
 ```
 
 ## {.smaller}
+
+Page 404 Output, 10.1
 
 ```{r, warning = FALSE, message = FALSE}
 attach(MyData)
-
 Mod.Example <- lm(Aggression ~ c.Vid_Games + c.CaUnTs + c.Vid_Games * c.CaUnTs)
 summary(Mod.Example)
-
 ```
 
 ## {.smaller}
 
-Book Example : Page 406
+Book Example : Plot, page 406
 
 ## {.smaller}
-
 
 ```{r}
 ggplot(MyData, aes(y = Aggression,
@@ -374,14 +381,13 @@ library(pequod)
 ```
 
 ```{r}
-model1 <- lmres(Aggression ~ Vid_Games + CaUnTs + Vid_Games*CaUnTs,
-                centered = c("Vid_Games", "CaUnTs"), data = MyData)
-summary(model1)
+summary(model1 <- lmres(Aggression ~ Vid_Games + CaUnTs + Vid_Games*CaUnTs,
+                centered = c("Vid_Games", "CaUnTs"), data = MyData))
 ```
 
 ## {.smaller}
 
-Book Example : Page 404
+Book Example : Page 404, Output 10.2 using the 'simpleSlope' function from the 'pequod' package
 
 ## {.smaller}
 
@@ -407,8 +413,7 @@ Book Example : Page 405
 
 ```{r}
 
-# this is to match the book
-
+# this is to approximately match the book, page 405, output 10.3
 jn.Values <- testSlopes(jn.Results)
 jn.Bounds <- jn.Values$jn[[5]]
 jn.lo <- jn.Bounds["lo"]
@@ -416,7 +421,6 @@ jn.hi <- jn.Bounds["hi"]
 
 # the book presents cut-off scores based on centered means, so here we
 # can convert the cutpoints# to match the book.
-
 jn.lo - mean(CaUnTs)
 jn.hi - mean (CaUnTs)
 ```
