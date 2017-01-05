@@ -9,6 +9,11 @@ output:
 
 ---
 
+```{r "setup", include = FALSE, echo = FALSE, warning = FALSE}
+require(knitr)
+opts_knit$set(root.dir = "~/NU/NU2016_2017/Week13")
+```
+
 ## {.smaller}
 
 Required packages for Multiple Linear Regression
@@ -28,7 +33,6 @@ Note that this presentation attempts to recreate most everything contained withi
 ## {.smaller}
 
 ```{r}
-setwd("~/NU/NU2016_2017/Week13")
 library(Hmisc)
 
 MyData1 <- read.table("AlbumSales2.dat",
