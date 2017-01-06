@@ -17,6 +17,8 @@ https://cran.r-project.org/web/packages/mediation/mediation.pdf
 https://cran.r-project.org/web/packages/pequod/pequod.pdf  
 https://cran.r-project.org/web/packages/rockchalk/rockchalk.pdf  
 
+Starting with Mediation and then looking at Moderation
+
 ## {.smaller}
 
 ```{r "setup", include = FALSE, echo = FALSE, warning = FALSE}
@@ -41,10 +43,7 @@ library(mediation)
 
 ## {.smaller}
 
-Book Example 1 - Pages 408-418
-
-## {.smaller}
-
+Starting with Book Example 1 - Pages 408-418
 
 ```{r}
 attach(MyData)
@@ -54,10 +53,15 @@ Path.b.Fit <- lm(Infidelity ~ Commitment, data = MyData)    # Path b
 Med.Fit    <- lm(Commitment ~ LnConsumption, data = MyData) # Path a
 Mod.Fit    <- lm(Infidelity ~ LnConsumption + Commitment, data = MyData) # Path c'
 Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Commitment",
-              treat = "LnConsumption", robustSE = TRUE, sims = 1000)
+              treat = "LnConsumption", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
 ```
 
+![Basic Mediation Model](MediationModel_1.jpg)
+
 ## {.smaller}
+
+Path C
 
 ```{r}
 summary(Dir.Fit)
@@ -65,18 +69,23 @@ summary(Dir.Fit)
 
 ## {.smaller}
 
+Path A
+
 ```{r}
 summary(Med.Fit)
 ```
 
 ## {.smaller}
 
+Path B
+
 ```{r}
 summary(Path.b.Fit)
 ```
 
-
 ## {.smaller}
+
+Path C'
 
 ```{r}
 summary(Mod.Fit)
@@ -86,19 +95,22 @@ summary(Mod.Fit)
 
 So, what we care about:
 
-Is our predictor associated with our mediator (path "a")?
+path "a" - Is our predictor [Consumption] associated with our mediator [Commitment]?
 
 Yes  
+b = -0.469
 p = .0284
 
-Is our predictor associated with our outcome? (path "c")
+path "c" - Is our predictor [Consumption] associated with our outcome [Infidelity]? 
 
 Yes  
+b = 0.584
 p = .0392
 
-Is our mediator associated with our outcome? (path "b")
+path "b" - Is our mediator [Commitment] associated with our outcome [Infidelity]?
 
 Yes  
+b = -0.2906
 p < .001
 
 Is the regression coefficient associated with our outcome less when the mediator is included?
@@ -111,10 +123,10 @@ Yes
 But what if we wanted to test for significance?
 
 ```{r}
-summary(Med.Out)
+summary(Med.Out) # Model from the "mediate" function
 ```
 
-The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .03, so in this case we could conclude that a significant mediation effect exists.  Per Fields, a significant indirect effect exists between pornography consumption and infidelity through relationship commitment.
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .05, so in this case we could conclude that a significant mediation effect exists if we use the CIs, or that one does not exist if we look at the p-value.  Per Fields, a significant indirect effect exists between pornography consumption and infidelity through relationship commitment.
 
 ## {.smaller}
 
@@ -130,7 +142,8 @@ Path.b.Fit <- lm(Hook_Ups ~ Commitment, data = MyData)    # Path b
 Med.Fit    <- lm(Commitment ~ LnConsumption, data = MyData) # Path a
 Mod.Fit    <- lm(Hook_Ups ~ LnConsumption + Commitment, data = MyData) # Path c'
 Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Commitment",
-              treat = "LnConsumption", robustSE = TRUE, sims = 1000)
+              treat = "LnConsumption", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
 ```
 
 The mediate function comes from the 'mediation' package and allows for a significance test of our mediational model.  In this case, we will save those reults to an object called 'Med.Out' and later call a "summary" on the 'Med.Out' object.
@@ -192,7 +205,7 @@ But what if we wanted to test for significance?
 summary(Med.Out)
 ```
 
-The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .03, so in this case we could conclude that a significant mediation effect exists.  Per Fields, a significant indirect effect exists between pornography consumption and "Hook_Ups" through relationship commitment.
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .05, so in this case we could conclude that a significant mediation effect exists using CIs or is not significant using the p-value.  Per Fields, a significant indirect effect exists between pornography consumption and "Hook_Ups" through relationship commitment.
 
 ## {.smaller}
 
@@ -218,7 +231,8 @@ Path.b.Fit <- lm(Desirability ~ Product_Cool, data = MyData)    # Path b
 Med.Fit    <- lm(Product_Cool ~ Advert_Cool, data = MyData) # Path a
 Mod.Fit    <- lm(Desirability ~ Advert_Cool + Product_Cool, data = MyData) # Path c'
 Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Product_Cool",
-              treat = "Advert_Cool", robustSE = TRUE, sims = 1000)
+              treat = "Advert_Cool", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
 ```
 
 ## {.smaller}
@@ -280,7 +294,7 @@ But what if we wanted to test for significance?
 summary(Med.Out)
 ```
 
-The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .01, so in this case we could conclude that a significant mediation effect exists.  Per Fields, a significant indirect effect exists between Cool Advertising and Product Desirability through How Cool the person thinks the product is.
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is < .01, so in this case we could conclude that a significant mediation effect exists.  Per Fields, a significant indirect effect exists between Cool Advertising and Product Desirability through How Cool the person thinks the product is.
 
 ## {.smaller}
 
@@ -294,6 +308,7 @@ RSq.Med - (RSq.Tot - RSq.Pred)
 
 ## {.smaller}
 
+Now, Moving to Moderation  
 Book Example : Page 392-407
 
 ## {.smaller}
@@ -305,8 +320,6 @@ MyData <- read.table("VideoGames.dat",
 MyData <- na.omit(MyData)
 library(ggplot2)
 ```
-
-## {.smaller}
 
 ```{r, warning = FALSE, message = FALSE}
 
@@ -362,9 +375,7 @@ summary(Mod.Example)
 
 Book Example : Plot, page 406
 
-## {.smaller}
-
-```{r}
+```{r, fig.width = 6, fig.height = 4}
 ggplot(MyData, aes(y = Aggression,
                    x = Vid_Games,
                    colour = Cal.Traits,
@@ -464,8 +475,6 @@ jn.hi - mean (CaUnTs)
 ## {.smaller}
 
 Book Example : Pages 419 - 426
-
-## {.smaller}
 
 ```{r, echo = FALSE, messages = FALSE, error = FALSE}
 MyData <- read.table("GlastonburyFestivalRegression.dat",
