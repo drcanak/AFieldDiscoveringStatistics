@@ -298,6 +298,14 @@ MyData1$Covariance.Ratios <- covratio(Album3)
 
 ## {.smaller}
 
+Shapiro-Wilks test for normality of errors (residuals) - All Predictors
+
+```{r}
+shapiro.test(MyData1$Residuals)
+```
+
+## {.smaller}
+
 Predicted vs Residuals diagnostic plots
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
