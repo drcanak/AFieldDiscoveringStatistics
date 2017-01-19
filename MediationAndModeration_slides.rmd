@@ -398,7 +398,7 @@ summary(model1 <- lmres(Aggression ~ Vid_Games + CaUnTs + Vid_Games*CaUnTs,
 
 ## {.smaller}
 
-Book Example : Page 404, Output 10.2 using the 'simpleSlope' function from the 'pequod' package
+The following slide shows similar results to Page 404, Output 10.2 using the 'simpleSlope' function from the 'pequod' package.  Note that these results miss the significant finding within +/- 1 s.d. of average CaUnTs score because only results outside the +/- 1 s.d get reported.  Eventually, you will see we can use the "rockchalk" library to obtain more comparable results to what you see in the Field's text.
 
 ## {.smaller}
 
@@ -422,7 +422,13 @@ JN.Results <- plotSlopes(JN.Example,
 
 \newpage
 
+The following results, using the "testSlopes" function from the "rockchalk" library more closely mirror what you see on page 404, output 10.2
+
 ## {.smaller}
+
+These results, using the "testSlopes" function from the "rockchalk" library more closely mirror what you see on page 404, output 10.2.  One thing to note is that the ranges you see here are based on actual CaUnTs scores.  The ranges you see in the text are based on centered means.  But the test statistics/p-values are very close.
+
+If it really concerns you, just take each of those CaUnTs scores you see in the table, and subtract the mean (e.g. 18.60), and you will then get the exact centered scores you see in the text.
 
 ```{r}
 ts <- testSlopes(JN.Results)
@@ -433,6 +439,8 @@ ts$hypotests
 
 Another approach to simple effects analysis to view within +/- 1 s.d.
 http://statistics.ats.ucla.edu/stat/r/faq/concon.htm
+
+The table you will see on the next slide is similar to what you see on page 405, output 10.3.  However, in this case, I have limited the table to key in on the range within +/- s.d. from the centered average on CaUnTs.  That is the range that is not available in the "pequod" library, and it is the range that evidenced a p-value of .02.  Focusing in on this range allows you to see that it is only when the CaUnTs score is above the average, that we see a moderating effect.
 
 ```{r}
 m1 <- lm(Aggression ~ c.Vid_Games + c.CaUnTs + c.Vid_Games * c.CaUnTs,
@@ -468,7 +476,8 @@ Results.CIs
 
 ## {.smaller}
 
-Book Example : Page 405
+Book Example : Page 405 - cont -
+To further evaluate what you see on page 405, you can see that this table is not necessarily formed by s.d. ranges  Rather, it's just an entire range of CaUnTs scores, looking where there might be cutoffs beyond which you have a significant moderating effect.  In the output you see in the text, any score that is less than -17.1002 off the average or greater than -.7232 off the average is where you see a significant moderating effect.  The next slide includes code to help you identify those cut points. 
 
 ## {.smaller}
 
