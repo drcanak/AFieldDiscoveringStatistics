@@ -407,6 +407,28 @@ Slope.Mod <- simpleSlope(model1, pred = "Vid_Games",  mod1 = "CaUnTs" )
 summary(Slope.Mod)
 ```
 
+\newpage
+
+## {.smaller}
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(rockchalk)
+JN.Example <- lm(Aggression ~ Vid_Games + CaUnTs + Vid_Games:CaUnTs)
+JN.Results <- plotSlopes(JN.Example,
+                 plotx = "Vid_Games",
+                 modx = "CaUnTs",
+                 modxVals = "std.dev")
+```
+
+\newpage
+
+## {.smaller}
+
+```{r}
+ts <- testSlopes(JN.Results)
+ts$hypotests
+```
+
 ## {.smaller}
 
 Another approach to simple effects analysis to view within +/- 1 s.d.
@@ -446,22 +468,13 @@ Results.CIs
 
 ## {.smaller}
 
-```{r, echo = FALSE, message = FALSE, error = FALSE}
-library(rockchalk)
-jn.Example <- lm(Aggression ~ Vid_Games + CaUnTs + Vid_Games * CaUnTs)
-jn.Results <- plotSlopes(jn.Example, plotx = "Vid_Games", modx = "CaUnTs")
-```
-
-## {.smaller}
-
 Book Example : Page 405
 
 ## {.smaller}
 
 ```{r}
-
 # this is to approximately match the book, page 405, output 10.3
-jn.Values <- testSlopes(jn.Results)
+jn.Values <- testSlopes(JN.Results)
 jn.Bounds <- jn.Values$jn[[5]]
 jn.lo <- jn.Bounds["lo"]
 jn.hi <- jn.Bounds["hi"]
