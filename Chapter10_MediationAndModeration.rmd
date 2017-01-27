@@ -1,0 +1,557 @@
+---
+title: "Week 13 - Mediation, Moderation and Categorical Predictors"
+author: "Jeff Canar"
+date: "January 19, 2017"
+output: ioslides_presentation
+---
+
+## {.smaller}
+
+Required packages for Mediation, Moderation and additional examples using categorical precidctors for this slide deck.
+
+1. mediation - Mediation Analysis
+2. pequod - Moderated regression package and simple slopes analysis
+3. rockchalk - Simple slope plotter and Johnson-Neyman interval boundaries
+4. ggplot2
+5. msm - Multi-state Markov
+
+https://cran.r-project.org/web/packages/mediation/mediation.pdf  
+https://cran.r-project.org/web/packages/pequod/pequod.pdf  
+https://cran.r-project.org/web/packages/rockchalk/rockchalk.pdf  
+
+Starting with Mediation and then looking at Moderation
+
+## {.smaller}
+
+```{r "setup", include = FALSE, echo = FALSE, warning = FALSE}
+require(knitr)
+opts_knit$set(root.dir = "~/NU/NU2016_2017/Week13")
+```
+
+```{r, echo = FALSE}
+setwd("~/NU/NU2016_2017/Week13")
+options(scipen = 999)
+MyData <- read.table("Lambert.dat",
+                    header=TRUE,
+                    sep="\t")
+
+# removing cases with missing data makes things a lot cleaner and reduces
+# warning/errors
+MyData <- na.omit(MyData)
+
+
+library(mediation)
+```
+
+## {.smaller}
+
+Starting with Book Example 1 - Pages 408-418
+
+```{r}
+attach(MyData)
+set.seed(12345)
+Dir.Fit    <- lm(Infidelity ~ LnConsumption, data = MyData) # Path c
+Path.b.Fit <- lm(Infidelity ~ Commitment, data = MyData)    # Path b
+Med.Fit    <- lm(Commitment ~ LnConsumption, data = MyData) # Path a
+Mod.Fit    <- lm(Infidelity ~ LnConsumption + Commitment, data = MyData) # Path c'
+Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Commitment",
+              treat = "LnConsumption", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
+```
+
+![Basic Mediation Model](MediationModel_1.jpg)
+
+## {.smaller}
+
+Path C
+
+```{r}
+summary(Dir.Fit)
+```
+
+## {.smaller}
+
+Path A
+
+```{r}
+summary(Med.Fit)
+```
+
+## {.smaller}
+
+Path B
+
+```{r}
+summary(Path.b.Fit)
+```
+
+## {.smaller}
+
+Path C'
+
+```{r}
+summary(Mod.Fit)
+```
+
+## {.smaller}
+
+So, what we care about:
+
+path "a" - Is our predictor [Consumption] associated with our mediator [Commitment]?
+
+Yes  
+b = -0.469
+p = .0284
+
+path "c" - Is our predictor [Consumption] associated with our outcome [Infidelity]? 
+
+Yes  
+b = 0.584
+p = .0392
+
+path "b" - Is our mediator [Commitment] associated with our outcome [Infidelity]?
+
+Yes  
+b = -0.2906
+p < .001
+
+Is the regression coefficient associated with our outcome less when the mediator is included?
+
+Yes  
+0.45734 < 0.58462
+
+## {.smaller}
+
+But what if we wanted to test for significance?
+
+```{r}
+summary(Med.Out) # Model from the "mediate" function
+```
+
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .05, so in this case we could conclude that a significant mediation effect exists if we use the CIs, or that one does not exist if we look at the p-value.  Per Fields, a significant indirect effect exists between pornography consumption and infidelity through relationship commitment.
+
+## {.smaller}
+
+Book Example 2 - SA Task 4
+
+## {.smaller}
+
+```{r, warning = FALSE, message = FALSE}
+attach(MyData)
+set.seed(12345)
+Dir.Fit    <- lm(Hook_Ups ~ LnConsumption, data = MyData) # Path c
+Path.b.Fit <- lm(Hook_Ups ~ Commitment, data = MyData)    # Path b
+Med.Fit    <- lm(Commitment ~ LnConsumption, data = MyData) # Path a
+Mod.Fit    <- lm(Hook_Ups ~ LnConsumption + Commitment, data = MyData) # Path c'
+Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Commitment",
+              treat = "LnConsumption", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
+```
+
+The mediate function comes from the 'mediation' package and allows for a significance test of our mediational model.  In this case, we will save those reults to an object called 'Med.Out' and later call a "summary" on the 'Med.Out' object.
+
+## {.smaller}
+
+```{r}
+summary(Dir.Fit)
+```
+
+## {.smaller}
+
+```{r}
+summary(Med.Fit)
+```
+
+## {.smaller}
+
+```{r}
+summary(Path.b.Fit)
+```
+
+
+## {.smaller}
+
+```{r}
+summary(Mod.Fit)
+```
+
+## {.smaller}
+
+So, what we care about:
+
+Is our predictor associated with our mediator (path "a")?
+
+Yes  
+p = .0284
+
+Is our predictor associated with our outcome? (path "c")
+
+Yes  
+p = .000371
+
+Is our mediator associated with our outcome? (path "b")
+
+Yes  
+p < .001
+
+Is the regression coefficient associated with our outcome less when the mediator is included?
+
+Yes  
+1.2811 < 1.5731
+
+## {.smaller}
+
+But what if we wanted to test for significance?
+
+```{r}
+summary(Med.Out)
+```
+
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is = .05, so in this case we could conclude that a significant mediation effect exists using CIs or is not significant using the p-value.  Per Fields, a significant indirect effect exists between pornography consumption and "Hook_Ups" through relationship commitment.
+
+## {.smaller}
+
+Book Example 2 - SA Task 9
+
+## {.smaller}
+
+```{r, echo = FALSE}
+MyData <- read.table("Tablets.dat",
+                    header=TRUE,
+                    sep="\t")
+MyData <- na.omit(MyData)
+
+
+library(mediation)
+```
+
+```{r, warning = FALSE, message = FALSE}
+attach(MyData)
+set.seed(12345)
+Dir.Fit    <- lm(Desirability ~ Advert_Cool, data = MyData) # Path c
+Path.b.Fit <- lm(Desirability ~ Product_Cool, data = MyData)    # Path b
+Med.Fit    <- lm(Product_Cool ~ Advert_Cool, data = MyData) # Path a
+Mod.Fit    <- lm(Desirability ~ Advert_Cool + Product_Cool, data = MyData) # Path c'
+Med.Out    <- mediate(Med.Fit, Mod.Fit, mediator = "Product_Cool",
+              treat = "Advert_Cool", robustSE = FALSE, boot = TRUE,
+              perc = TRUE, sims = 1000)
+```
+
+## {.smaller}
+
+```{r}
+summary(Dir.Fit)
+RSq.Pred <- summary(Dir.Fit)$r.squared
+```
+
+## {.smaller}
+
+```{r}
+summary(Med.Fit)
+```
+
+## {.smaller}
+
+```{r}
+summary(Path.b.Fit)
+RSq.Med <- summary(Path.b.Fit)$r.squared
+```
+
+## {.smaller}
+
+```{r}
+summary(Mod.Fit)
+RSq.Tot <- summary(Mod.Fit)$r.squared
+```
+
+## {.smaller}
+
+So, what we care about:
+
+Is our predictor associated with our mediator (path "a")?
+
+Yes  
+p = .00323
+
+Is our predictor associated with our outcome? (path "c")
+
+Yes  
+p = .000136
+
+Is our mediator associated with our outcome? (path "b")
+
+Yes  
+p < .001
+
+Is the regression coefficient associated with our outcome less when the mediator is included?
+
+Yes  
+.18614 < .2355
+
+## {.smaller}
+
+But what if we wanted to test for significance?
+
+```{r}
+summary(Med.Out)
+```
+
+The Average Causal Mediation Effect (ACME) CI does not contain "0", the p-value is < .01, so in this case we could conclude that a significant mediation effect exists.  Per Fields, a significant indirect effect exists between Cool Advertising and Product Desirability through How Cool the person thinks the product is.
+
+## {.smaller}
+
+R^2 for the indirect effect is equal to:
+
+```{r}
+
+RSq.Med - (RSq.Tot - RSq.Pred)
+
+```
+
+## {.smaller}
+
+Now, Moving to Moderation  
+Book Example : Page 392-407
+
+## {.smaller}
+
+```{r, warning = FALSE, message = FALSE}
+MyData <- read.table("VideoGames.dat",
+                    header = TRUE,
+                    sep = "\t")
+MyData <- na.omit(MyData)
+library(ggplot2)
+```
+
+```{r, warning = FALSE, message = FALSE}
+
+# Centering our variables
+attach(MyData)
+MyData$c.Aggression <- scale(Aggression, center = TRUE, scale = FALSE)
+MyData$c.Vid_Games  <- scale(Vid_Games, center = TRUE, scale = FALSE)
+MyData$c.CaUnTs     <- scale(CaUnTs, center = TRUE, scale = FALSE)
+
+```
+
+## {.smaller}
+
+This is just to show that centering variables around the mean doesn't change the variance.
+
+```{r, warning = FALSE, message = FALSE}
+attach(MyData)
+sd(CaUnTs)
+mean(CaUnTs)
+
+sd(c.CaUnTs)
+mean(c.CaUnTs)
+```
+
+## {.smaller}
+
+In order to create a plot looking at different slopes, this creates a new variable with three different categories.
+
+```{r}
+MyData$Cal.Traits[c.CaUnTs <= (mean(c.CaUnTs) - sd(c.CaUnTs))] <- "Low"
+MyData$Cal.Traits[c.CaUnTs >= (mean(c.CaUnTs) + sd(c.CaUnTs))] <- "High"
+MyData$Cal.Traits[c.CaUnTs > (mean(c.CaUnTs) - sd(c.CaUnTs)) &
+                  c.CaUnTs <  (mean(c.CaUnTs) + sd(c.CaUnTs))] <- "Avg"
+
+# then in order to ensure that my first level is my "Low"" group, I  
+# explicitly set the level order to override R's default behavior of
+# making them alphabetical
+
+MyData$Cal.Traits <- factor(MyData$Cal.Traits, levels = c("Low", "Avg", "High"))
+```
+
+## {.smaller}
+
+Page 404 Output, 10.1
+
+```{r, warning = FALSE, message = FALSE}
+attach(MyData)
+Mod.Example <- lm(Aggression ~ c.Vid_Games + c.CaUnTs + c.Vid_Games * c.CaUnTs)
+summary(Mod.Example)
+```
+
+## {.smaller}
+
+Book Example : Plot, page 406
+
+```{r, fig.width = 6, fig.height = 4}
+ggplot(MyData, aes(y = Aggression,
+                   x = Vid_Games,
+                   colour = Cal.Traits,
+                   shape = Cal.Traits,
+                   linetype = Cal.Traits)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE, fullrange = TRUE)
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, message = FALSE, error = FALSE}
+library(pequod)
+```
+
+```{r}
+summary(model1 <- lmres(Aggression ~ Vid_Games + CaUnTs + Vid_Games*CaUnTs,
+                centered = c("Vid_Games", "CaUnTs"), data = MyData))
+```
+
+## {.smaller}
+
+The following slide shows similar results to Page 404, Output 10.2 using the 'simpleSlope' function from the 'pequod' package.  Note that these results miss the significant finding within +/- 1 s.d. of average CaUnTs score because only results outside the +/- 1 s.d get reported.  Eventually, you will see we can use the "rockchalk" library to obtain more comparable results to what you see in the Field's text.
+
+## {.smaller}
+
+```{r}
+Slope.Mod <- simpleSlope(model1, pred = "Vid_Games",  mod1 = "CaUnTs" )
+summary(Slope.Mod)
+```
+
+\newpage
+
+## {.smaller}
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+library(rockchalk)
+JN.Example <- lm(Aggression ~ Vid_Games + CaUnTs + Vid_Games:CaUnTs)
+JN.Results <- plotSlopes(JN.Example,
+                 plotx = "Vid_Games",
+                 modx = "CaUnTs",
+                 modxVals = "std.dev")
+```
+
+\newpage
+
+The following results, using the "testSlopes" function from the "rockchalk" library more closely mirror what you see on page 404, output 10.2
+
+## {.smaller}
+
+These results, using the "testSlopes" function from the "rockchalk" library more closely mirror what you see on page 404, output 10.2.  One thing to note is that the ranges you see here are based on actual CaUnTs scores.  The ranges you see in the text are based on centered means.  But the test statistics/p-values are very close.
+
+If it really concerns you, just take each of those CaUnTs scores you see in the table, and subtract the mean (e.g. 18.60), and you will then get the exact centered scores you see in the text.
+
+```{r}
+ts <- testSlopes(JN.Results)
+ts$hypotests
+```
+
+## {.smaller}
+
+Another approach to simple effects analysis to view within +/- 1 s.d.
+http://statistics.ats.ucla.edu/stat/r/faq/concon.htm
+
+The table you will see on the next slide is similar to what you see on page 405, output 10.3.  However, in this case, I have limited the table to key in on the range within +/- s.d. from the centered average on CaUnTs.  That is the range that is not available in the "pequod" library, and it is the range that evidenced a p-value of .02.  Focusing in on this range allows you to see that it is only when the CaUnTs score is above the average, that we see a moderating effect.
+
+```{r}
+m1 <- lm(Aggression ~ c.Vid_Games + c.CaUnTs + c.Vid_Games * c.CaUnTs,
+         data = MyData)
+at.avg <- seq(-9.6, 9.6, by = 1)
+slopes <- m1$coef[2] + m1$coef[4] * at.avg
+slopes
+mean(slopes)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, error = FALSE}
+library(msm)
+estmean <- coef(m1)
+var <- vcov(m1)
+SEs <- rep(NA, length(at.avg))
+
+for (i in 1:length(at.avg)) {
+  j <- at.avg[i]
+  SEs[i] <- deltamethod (~ (x2) + (x4 * j), estmean, var)
+}
+
+upper <- slopes + 1.96 * SEs
+lower <- slopes - 1.96 * SEs
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE, error = FALSE}
+Results.CIs <- data.frame(cbind(at.avg, slopes, lower, upper))
+Results.CIs$Contains.Zero <- Results.CIs$lower * Results.CIs$upper < 0
+Results.CIs
+```
+
+## {.smaller}
+
+Book Example : Page 405 - cont -
+To further evaluate what you see on page 405, you can see that this table is not necessarily formed by s.d. ranges  Rather, it's just an entire range of CaUnTs scores, looking where there might be cutoffs beyond which you have a significant moderating effect.  In the output you see in the text, any score that is less than -17.1002 off the average or greater than -.7232 off the average is where you see a significant moderating effect.  The next slide includes code to help you identify those cut points. 
+
+## {.smaller}
+
+```{r}
+# this is to approximately match the book, page 405, output 10.3
+jn.Values <- testSlopes(JN.Results)
+jn.Bounds <- jn.Values$jn[[5]]
+jn.lo <- jn.Bounds["lo"]
+jn.hi <- jn.Bounds["hi"]
+
+# the book presents cut-off scores based on centered means, so here we
+# can convert the cutpoints to approximately match the book.
+jn.lo - mean(CaUnTs)
+jn.hi - mean (CaUnTs)
+```
+
+## {.smaller}
+
+Book Example : Pages 419 - 426
+
+```{r, echo = FALSE, messages = FALSE, error = FALSE}
+MyData <- read.table("GlastonburyFestivalRegression.dat",
+                    header=TRUE,
+                    sep="\t")
+
+MyData$music.factor <- factor(MyData$music, levels = c(1, 2, 3, 4),
+                              labels = c("Indie", "Metal", "Crusty", "None"))
+str(MyData)
+levels(MyData$music.factor)
+
+MyData$music.factor <- factor(MyData$music.factor, c("None", "Indie", "Metal", "Crusty"))
+levels(MyData$music.factor)
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, message = FALSE, error = FALSE}
+attach(MyData)
+MyModel <- lm(change ~ music.factor)
+summary(MyModel)
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, message = FALSE, error = FALSE}
+library(psych)
+describeBy(change, music.factor)
+Mean.Differences <- describeBy(change, music.factor)
+```
+
+## {.smaller}
+
+```{r, echo = FALSE, message = FALSE, error = FALSE}
+
+# this last bit is to create a table showing that mean comparisons results
+# are the exact same differences that are shown when looking at the
+# regression coefficients.
+
+Agg.Means <- aggregate(change, by = list(music.factor), FUN = mean, na.rm = TRUE)
+None.Mean <- c(rep(-.5543103, 4))
+
+Mean.Comparisons <- cbind(Agg.Means, None.Mean)
+Mean.Comparisons$Mean.Differences <- Mean.Comparisons$x - Mean.Comparisons$None.Mean
+Mean.Comparisons
+```
+
+## {.smaller}
+
+In summary:
+
+1. Mediation analysis attempts to account for the relationship between two variables by looking at a third variable.  The method proposed by Baron and Kenny is historically what most people use and are familiar with.  It can be extened with R (as we have seen), with the PROCESS macro for SPSS, or other tools.
+
+2. Moderation looks at the effect a third variable has on the relationship between a predictor and outcome.  You are interested in testing whether or not the relationship between two variables changes in magnitude and diretion based on a third variable (the moderating variable).  You test this by creating an interaction term, followed up by simple slopes analysis.
+
+3. Using categorical variables in regression, as predictors, can be accomplished through "dummy" codes.  R will automatically manage this for us.  The only thing you have to do is ensure that you correctly define the "reference" group.  That is, the group to which all other groups will be compared.  In SPSS, dummy variables have to be created manually.
